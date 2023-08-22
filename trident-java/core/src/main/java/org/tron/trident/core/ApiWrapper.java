@@ -118,22 +118,17 @@ public class ApiWrapper {
     public static final long TRANSACTION_DEFAULT_EXPIRATION_TIME = 60 * 1_000L; //60 seconds
 
     public final WalletGrpc.WalletBlockingStub blockingStub;
-    public final WalletSolidityGrpc.WalletSolidityBlockingStub blockingStubSolidity;
     public final KeyPair keyPair;
     public final ManagedChannel channel;
-    public final ManagedChannel channelSolidity;
 
-    public ApiWrapper(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey) {
+    public ApiWrapper(String grpcEndpoint, String hexPrivateKey) {
         channel = ManagedChannelBuilder.forTarget(grpcEndpoint).usePlaintext().build();
-        channelSolidity = ManagedChannelBuilder.forTarget(grpcEndpointSolidity).usePlaintext().build();
         blockingStub = WalletGrpc.newBlockingStub(channel);
-        blockingStubSolidity = WalletSolidityGrpc.newBlockingStub(channelSolidity);
         keyPair = new KeyPair(hexPrivateKey);
     }
 
-    public ApiWrapper(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey, String apiKey) {
+    public ApiWrapper(String grpcEndpoint, String hexPrivateKey, String apiKey) {
         channel = ManagedChannelBuilder.forTarget(grpcEndpoint).usePlaintext().build();
-        channelSolidity = ManagedChannelBuilder.forTarget(grpcEndpointSolidity).usePlaintext().build();
 
         //attach api key
         Metadata header = new Metadata();
@@ -141,26 +136,21 @@ public class ApiWrapper {
         header.put(key, apiKey);
 
         blockingStub = (WalletGrpc.WalletBlockingStub)MetadataUtils.attachHeaders(WalletGrpc.newBlockingStub(channel), header);
-        blockingStubSolidity = (WalletSolidityGrpc.WalletSolidityBlockingStub)MetadataUtils.attachHeaders(WalletSolidityGrpc.newBlockingStub(channelSolidity), header);
-
         keyPair = new KeyPair(hexPrivateKey);
     }
 
-    public ApiWrapper(String grpcEndpoint, String grpcEndpointSolidity, String hexPrivateKey, List<ClientInterceptor> clientInterceptors) {
+    public ApiWrapper(String grpcEndpoint, String hexPrivateKey, List<ClientInterceptor> clientInterceptors) {
         channel = ManagedChannelBuilder.forTarget(grpcEndpoint)
             .intercept(clientInterceptors)
             .usePlaintext()
             .build();
-        channelSolidity = ManagedChannelBuilder.forTarget(grpcEndpointSolidity).usePlaintext().build();
         blockingStub = WalletGrpc.newBlockingStub(channel);
-        blockingStubSolidity = WalletSolidityGrpc.newBlockingStub(channelSolidity);
         keyPair = new KeyPair(hexPrivateKey);
     }
 
 
     public void close() {
         channel.shutdown();
-        channelSolidity.shutdown();
     }
 
     /*public ApiWrapper(Channel channel, String hexPrivateKey) {
@@ -176,21 +166,21 @@ public class ApiWrapper {
      * @return a ApiWrapper object
      */
     public static ApiWrapper ofMainnet(String hexPrivateKey, String apiKey) {
-        return new ApiWrapper(Constant.TRONGRID_MAIN_NET, Constant.TRONGRID_MAIN_NET_SOLIDITY, hexPrivateKey, apiKey);
+        return new ApiWrapper(Constant.TRONGRID_MAIN_NET, hexPrivateKey, apiKey);
     }
 
     /**
      * The constuctor for main net.
-     * @deprecated 
+     * @deprecated
      * This method will only be available before TronGrid prohibits the use without API key
-     * 
+     *
      * @param hexPrivateKey the binding private key. Operations require private key will all use this unless the private key is specified elsewhere.
      * @param apiKey this function works with TronGrid, an API key is required.
      * @return a ApiWrapper object
      */
     @Deprecated
     public static ApiWrapper ofMainnet(String hexPrivateKey) {
-        return new ApiWrapper(Constant.TRONGRID_MAIN_NET, Constant.TRONGRID_MAIN_NET_SOLIDITY, hexPrivateKey);
+        return new ApiWrapper(Constant.TRONGRID_MAIN_NET, hexPrivateKey);
     }
 
     /**
@@ -200,7 +190,7 @@ public class ApiWrapper {
      * @return a ApiWrapper object
      */
     public static ApiWrapper ofShasta(String hexPrivateKey) {
-        return new ApiWrapper(Constant.TRONGRID_SHASTA, Constant.TRONGRID_SHASTA_SOLIDITY, hexPrivateKey);
+        return new ApiWrapper(Constant.TRONGRID_SHASTA, hexPrivateKey);
     }
 
     /**
@@ -268,7 +258,7 @@ public class ApiWrapper {
     public Transaction signTransaction(TransactionExtention txnExt, KeyPair keyPair) {
         byte[] txid = txnExt.getTxid().toByteArray();
         byte[] signature = KeyPair.signTransaction(txid, keyPair);
-        Transaction signedTxn = 
+        Transaction signedTxn =
                         txnExt.getTransaction().toBuilder().addSignature(ByteString.copyFrom(signature)).build();
 
         return signedTxn;
@@ -291,7 +281,7 @@ public class ApiWrapper {
 
 
     private TransactionCapsule createTransactionCapsuleWithoutValidate(
-        Message message, Transaction.Contract.ContractType contractType,BlockExtention solidHeadBlock, BlockExtention headBlock) throws Exception {
+        Message message, Transaction.Contract.ContractType contractType, BlockExtention headBlock) throws Exception {
         TransactionCapsule trx = new TransactionCapsule(message, contractType);
 
         if (contractType == Transaction.Contract.ContractType.CreateSmartContract) {
@@ -305,8 +295,8 @@ public class ApiWrapper {
         //build transaction
         trx.setTransactionCreate(false);
         //get solid head blockId
-        byte[] blockHash = Utils.getBlockId(solidHeadBlock).getBytes();
-        trx.setReference(solidHeadBlock.getBlockHeader().getRawData().getNumber(), blockHash);
+        byte[] blockHash = Utils.getBlockId(headBlock).getBytes();
+        trx.setReference(headBlock.getBlockHeader().getRawData().getNumber(), blockHash);
 
         //get expiration time from head block timestamp
         long expiration = headBlock.getBlockHeader().getRawData().getTimestamp() + TRANSACTION_DEFAULT_EXPIRATION_TIME;
@@ -318,10 +308,9 @@ public class ApiWrapper {
 
     private TransactionCapsule createTransaction(
         Message message, Transaction.Contract.ContractType contractType) throws Exception {
-        BlockExtention solidHeadBlock = blockingStubSolidity.getNowBlock2(EmptyMessage.getDefaultInstance());
         BlockExtention headBlock = blockingStub.getNowBlock2(EmptyMessage.getDefaultInstance());
 
-        return createTransactionCapsuleWithoutValidate(message,contractType,solidHeadBlock,headBlock);
+        return createTransactionCapsuleWithoutValidate(message,contractType,headBlock);
     }
 
 
@@ -407,7 +396,7 @@ public class ApiWrapper {
             throw new RuntimeException(message);
         } else {
             byte[] txid = calculateTransactionHash(txn);
-            return ByteString.copyFrom(Hex.encode(txid)).toStringUtf8();          
+            return ByteString.copyFrom(Hex.encode(txid)).toStringUtf8();
         }
     }
 
@@ -1498,68 +1487,6 @@ public class ApiWrapper {
         return transactionApprovedList;
     }
 
-    //All other solidified APIs start
-
-    /**
-     * Get solid account info by address
-     * @param address address, default hexString
-     * @return Account
-     */
-    public Account getAccountSolidity(String address) {
-        ByteString bsAddress = parseAddress(address);
-        AccountAddressMessage accountAddressMessage = AccountAddressMessage.newBuilder()
-                .setAddress(bsAddress)
-                .build();
-        Account account = blockingStubSolidity.getAccount(accountAddressMessage);
-        return account;
-    }
-
-    /**
-     * Query the latest solid block information
-     * @return BlockExtention
-     * @throws IllegalException if fail to get now block
-     */
-    public BlockExtention getNowBlockSolidity() throws IllegalException {
-        BlockExtention blockExtention = blockingStubSolidity.getNowBlock2(EmptyMessage.newBuilder().build());
-
-        if(!blockExtention.hasBlockHeader()){
-            throw new IllegalException("Fail to get latest block.");
-        }
-        return blockExtention;
-    }
-
-    /**
-     * Get transaction receipt info from a transaction id, must be in solid block
-     * @param txID Transaction hash, i.e. transaction id
-     * @return Transaction
-     * @throws IllegalException if the parameters are not correct
-     */
-    public Transaction getTransactionByIdSolidity(String txID) throws IllegalException {
-        ByteString bsTxid = parseAddress(txID);
-        BytesMessage request = BytesMessage.newBuilder()
-                .setValue(bsTxid)
-                .build();
-        Transaction transaction = blockingStubSolidity.getTransactionById(request);
-
-        if(transaction.getRetCount() == 0) {
-            throw new IllegalException();
-        }
-        return transaction;
-    }
-
-    /**
-     * Get the rewards that the voter has not received
-     * @param address address, default hexString
-     * @return NumberMessage
-     */
-    public NumberMessage getRewardSolidity(String address)  {
-        ByteString bsAddress = parseAddress(address);
-        BytesMessage bytesMessage = BytesMessage.newBuilder()
-                .setValue(bsAddress)
-                .build();
-        NumberMessage numberMessage = blockingStubSolidity.getRewardInfo(bytesMessage);
-        return numberMessage;
-    }
     //All other solidified APIs end
 
     public static VoteWitnessContract createVoteWitnessContract(ByteString ownerAddress,
@@ -1632,7 +1559,7 @@ public class ApiWrapper {
 
     public TransactionExtention updateBrokerage(String address, int brokerage) throws IllegalException{
         ByteString ownerAddr = parseAddress(address);
-        UpdateBrokerageContract upContract = 
+        UpdateBrokerageContract upContract =
                            UpdateBrokerageContract.newBuilder()
                                         .setOwnerAddress(ownerAddr)
                                         .setBrokerage(brokerage)
@@ -1647,7 +1574,7 @@ public class ApiWrapper {
         BytesMessage param =
                 BytesMessage.newBuilder()
                         .setValue(sr)
-                        .build();        
+                        .build();
         return blockingStub.getBrokerageInfo(param).getNum();
     }
 
@@ -1769,7 +1696,7 @@ public class ApiWrapper {
         Contract cntr = getContract(contractAddr);
 
         TransactionExtention txnExt =  callWithoutBroadcast(ownerAddr, cntr, function);
-        
+
         return txnExt;
     }
 
