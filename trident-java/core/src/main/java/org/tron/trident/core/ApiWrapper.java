@@ -2088,4 +2088,9 @@ public class ApiWrapper {
         Response.PricesResponseMessage prices = blockingStub.getMemoFee(EmptyMessage.getDefaultInstance());
         return prices;
     }
+
+    public BlockExtention getBlock(String idOrNum, boolean detail) {
+        BlockExtention blockExtention = blockingStub.getBlock(GrpcAPI.BlockReq.newBuilder().setIdOrNum(idOrNum).setDetail(detail).build());
+        return blockExtention;
+    }
 }

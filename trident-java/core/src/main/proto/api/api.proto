@@ -226,6 +226,9 @@ service Wallet {
   rpc GetBandwidthPrices (EmptyMessage) returns (PricesResponseMessage) {}
   rpc GetEnergyPrices (EmptyMessage) returns (PricesResponseMessage) {}
   rpc GetMemoFee (EmptyMessage) returns (PricesResponseMessage) {}
+
+  // GetBlock
+  rpc GetBlock (BlockReq) returns (BlockExtention) {}
 };
 
 // NOTE: All other solidified APIs are useless.
@@ -241,6 +244,10 @@ service WalletSolidity {
   rpc GetBandwidthPrices (EmptyMessage) returns (PricesResponseMessage) {}
   rpc GetEnergyPrices (EmptyMessage) returns (PricesResponseMessage) {}
 };
+message BlockReq {
+  string id_or_num = 1;
+  bool   detail = 2;
+}
 
 message EmptyMessage {}
 message NumberMessage {

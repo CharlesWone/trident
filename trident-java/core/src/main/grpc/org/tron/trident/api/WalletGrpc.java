@@ -2879,6 +2879,37 @@ public final class WalletGrpc {
     return getGetMemoFeeMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<org.tron.trident.api.GrpcAPI.BlockReq,
+      org.tron.trident.proto.Response.BlockExtention> getGetBlockMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetBlock",
+      requestType = org.tron.trident.api.GrpcAPI.BlockReq.class,
+      responseType = org.tron.trident.proto.Response.BlockExtention.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<org.tron.trident.api.GrpcAPI.BlockReq,
+      org.tron.trident.proto.Response.BlockExtention> getGetBlockMethod() {
+    io.grpc.MethodDescriptor<org.tron.trident.api.GrpcAPI.BlockReq, org.tron.trident.proto.Response.BlockExtention> getGetBlockMethod;
+    if ((getGetBlockMethod = WalletGrpc.getGetBlockMethod) == null) {
+      synchronized (WalletGrpc.class) {
+        if ((getGetBlockMethod = WalletGrpc.getGetBlockMethod) == null) {
+          WalletGrpc.getGetBlockMethod = getGetBlockMethod =
+              io.grpc.MethodDescriptor.<org.tron.trident.api.GrpcAPI.BlockReq, org.tron.trident.proto.Response.BlockExtention>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetBlock"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  org.tron.trident.api.GrpcAPI.BlockReq.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  org.tron.trident.proto.Response.BlockExtention.getDefaultInstance()))
+              .setSchemaDescriptor(new WalletMethodDescriptorSupplier("GetBlock"))
+              .build();
+        }
+      }
+    }
+    return getGetBlockMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -3658,6 +3689,16 @@ public final class WalletGrpc {
       asyncUnimplementedUnaryCall(getGetMemoFeeMethod(), responseObserver);
     }
 
+    /**
+     * <pre>
+     * GetBlock
+     * </pre>
+     */
+    public void getBlock(org.tron.trident.api.GrpcAPI.BlockReq request,
+        io.grpc.stub.StreamObserver<org.tron.trident.proto.Response.BlockExtention> responseObserver) {
+      asyncUnimplementedUnaryCall(getGetBlockMethod(), responseObserver);
+    }
+
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
@@ -4304,6 +4345,13 @@ public final class WalletGrpc {
                 org.tron.trident.api.GrpcAPI.EmptyMessage,
                 org.tron.trident.proto.Response.PricesResponseMessage>(
                   this, METHODID_GET_MEMO_FEE)))
+          .addMethod(
+            getGetBlockMethod(),
+            asyncUnaryCall(
+              new MethodHandlers<
+                org.tron.trident.api.GrpcAPI.BlockReq,
+                org.tron.trident.proto.Response.BlockExtention>(
+                  this, METHODID_GET_BLOCK)))
           .build();
     }
   }
@@ -5144,6 +5192,17 @@ public final class WalletGrpc {
       asyncUnaryCall(
           getChannel().newCall(getGetMemoFeeMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     * <pre>
+     * GetBlock
+     * </pre>
+     */
+    public void getBlock(org.tron.trident.api.GrpcAPI.BlockReq request,
+        io.grpc.stub.StreamObserver<org.tron.trident.proto.Response.BlockExtention> responseObserver) {
+      asyncUnaryCall(
+          getChannel().newCall(getGetBlockMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -5889,6 +5948,16 @@ public final class WalletGrpc {
     public org.tron.trident.proto.Response.PricesResponseMessage getMemoFee(org.tron.trident.api.GrpcAPI.EmptyMessage request) {
       return blockingUnaryCall(
           getChannel(), getGetMemoFeeMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * GetBlock
+     * </pre>
+     */
+    public org.tron.trident.proto.Response.BlockExtention getBlock(org.tron.trident.api.GrpcAPI.BlockReq request) {
+      return blockingUnaryCall(
+          getChannel(), getGetBlockMethod(), getCallOptions(), request);
     }
   }
 
@@ -6728,6 +6797,17 @@ public final class WalletGrpc {
       return futureUnaryCall(
           getChannel().newCall(getGetMemoFeeMethod(), getCallOptions()), request);
     }
+
+    /**
+     * <pre>
+     * GetBlock
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<org.tron.trident.proto.Response.BlockExtention> getBlock(
+        org.tron.trident.api.GrpcAPI.BlockReq request) {
+      return futureUnaryCall(
+          getChannel().newCall(getGetBlockMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_BROADCAST_TRANSACTION = 0;
@@ -6822,6 +6902,7 @@ public final class WalletGrpc {
   private static final int METHODID_GET_BANDWIDTH_PRICES = 89;
   private static final int METHODID_GET_ENERGY_PRICES = 90;
   private static final int METHODID_GET_MEMO_FEE = 91;
+  private static final int METHODID_GET_BLOCK = 92;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -7208,6 +7289,10 @@ public final class WalletGrpc {
           serviceImpl.getMemoFee((org.tron.trident.api.GrpcAPI.EmptyMessage) request,
               (io.grpc.stub.StreamObserver<org.tron.trident.proto.Response.PricesResponseMessage>) responseObserver);
           break;
+        case METHODID_GET_BLOCK:
+          serviceImpl.getBlock((org.tron.trident.api.GrpcAPI.BlockReq) request,
+              (io.grpc.stub.StreamObserver<org.tron.trident.proto.Response.BlockExtention>) responseObserver);
+          break;
         default:
           throw new AssertionError();
       }
@@ -7361,6 +7446,7 @@ public final class WalletGrpc {
               .addMethod(getGetBandwidthPricesMethod())
               .addMethod(getGetEnergyPricesMethod())
               .addMethod(getGetMemoFeeMethod())
+              .addMethod(getGetBlockMethod())
               .build();
         }
       }
