@@ -411,7 +411,7 @@ public class TypeDecoder {
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends Type> T decodeDynamicArray(
+    public static <T extends Type> T decodeDynamicArray(
             String input, int offset, TypeReference<T> typeReference) {
 
         int length = decodeUintAsInt(input, offset);
@@ -424,7 +424,7 @@ public class TypeDecoder {
         return decodeArrayElements(input, valueOffset, typeReference, length, function);
     }
 
-    static <T extends Type> T decodeDynamicStruct(
+    public static <T extends Type> T decodeDynamicStruct(
             String input, int offset, TypeReference<T> typeReference) {
 
         BiFunction<List<T>, String, T> function =
