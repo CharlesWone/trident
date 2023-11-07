@@ -199,7 +199,7 @@ public class ApiWrapper {
      * @return a ApiWrapper object
      */
     public static ApiWrapper ofNile(String hexPrivateKey) {
-        return new ApiWrapper(Constant.FULLNODE_NILE, Constant.FULLNODE_NILE_SOLIDITY, hexPrivateKey);
+        return new ApiWrapper(Constant.FULLNODE_NILE, hexPrivateKey);
     }
 
     /**
